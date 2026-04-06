@@ -20,9 +20,11 @@ class ProductService:
 
     @staticmethod
     def create(db: Session, data: ProductCreate) -> Product:
-        product = Product(**data.model_dump())
-        # Calcular PVP inicial al crear
-        product.sale_price = product.calculate_sale_price()
+        dump = data.model_dump()
+        manual_price = dump.pop('sale_price_override', None)
+        product = Product(**dump)
+        # Si hay precio manual lo usa, sino calcula por margen
+        product.sale_price = float(manual_price) if manual_price else product.calculate_sale_price()
         db.add(product)
         db.commit()
         db.refresh(product)
@@ -63,11 +65,13 @@ class ProductService:
     @staticmethod
     def update(db: Session, product: Product, data: ProductUpdate) -> Product:
         patch = data.model_dump(exclude_unset=True)
+        manual_price = patch.pop('sale_price_override', None)
         for field, value in patch.items():
             setattr(product, field, value)
 
-        # Si cambiaron costo o margen, recalcular PVP
-        if "cost_price" in patch or "margin_percent" in patch:
+        if manual_price:
+            product.sale_price = float(manual_price)
+        elif "cost_price" in patch or "margin_percent" in patch:
             product.sale_price = product.calculate_sale_price()
 
         product.updated_at = datetime.utcnow()

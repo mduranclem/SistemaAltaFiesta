@@ -28,11 +28,11 @@ class Product(Base):
 
     # ── Tipo de stock ──────────────────────────────────────────
     unit_type: Mapped[str] = mapped_column(
-        Enum(UnitType), nullable=False, default=UnitType.UNIT
+        String(20), nullable=False, default="unidad"
     )
     weight_unit: Mapped[str | None] = mapped_column(
-        Enum(WeightUnit), nullable=True
-    )  # Solo aplica cuando unit_type == WEIGHT
+        String(10), nullable=True
+    )
 
     # ── Stock ──────────────────────────────────────────────────
     stock: Mapped[float] = mapped_column(Numeric(12, 3), nullable=False, default=0)
@@ -45,10 +45,17 @@ class Product(Base):
     )
     sale_price: Mapped[float] = mapped_column(
         Numeric(12, 2), nullable=False
-    )  # PVP calculado automáticamente
+    )  # PVP calculado automáticamente (precio por paquete)
+
+    # ── Venta fraccionada ──────────────────────────────────────
+    package_size: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    # Cuántas unidades base trae un paquete (ej: 10 panes = package_size 10)
+    retail_price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    # Precio por unidad suelta (None = no se vende suelto)
 
     # ── Estado ────────────────────────────────────────────────
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_combo: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )

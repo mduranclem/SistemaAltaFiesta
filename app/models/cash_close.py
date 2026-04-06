@@ -20,6 +20,9 @@ class CashClose(Base):
     total_credit: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     total_transfer: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
 
+    # Fondo de caja
+    opening_cash: Mapped[float] = mapped_column(Numeric(12, 2), default=0)  # efectivo inicial del cajón
+
     # Totales
     gross_income: Mapped[float] = mapped_column(Numeric(12, 2), default=0)  # suma de ventas
     total_expenses: Mapped[float] = mapped_column(Numeric(12, 2), default=0)  # suma de gastos

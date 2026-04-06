@@ -22,6 +22,8 @@ class Sale(Base):
         Enum(PaymentMethod), nullable=False, default=PaymentMethod.CASH
     )
     total: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    discount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    surcharge: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

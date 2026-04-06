@@ -28,6 +28,15 @@ class FinanceService:
         return expense
 
     @staticmethod
+    def delete_expense(db: Session, expense_id: int) -> bool:
+        expense = db.get(Expense, expense_id)
+        if not expense:
+            return False
+        db.delete(expense)
+        db.commit()
+        return True
+
+    @staticmethod
     def list_expenses_by_date(db: Session, target_date: date) -> list[Expense]:
         stmt = select(Expense).where(
             func.date(Expense.created_at) == target_date
@@ -88,7 +97,7 @@ class FinanceService:
     # ── Cierre de Caja ───────────────────────────────────────────────────
 
     @staticmethod
-    def close_cash(db: Session, target_date: date, notes: str | None = None) -> CashClose:
+    def close_cash(db: Session, target_date: date, notes: str | None = None, opening_cash: float = 0) -> CashClose:
         """Genera y persiste el cierre de caja. Falla si ya existe para esa fecha."""
         existing = db.scalar(
             select(CashClose).where(CashClose.close_date == target_date)
@@ -100,6 +109,7 @@ class FinanceService:
 
         cash_close = CashClose(
             close_date=target_date,
+            opening_cash=opening_cash,
             total_cash=summary.total_cash,
             total_debit=summary.total_debit,
             total_credit=summary.total_credit,
@@ -113,6 +123,45 @@ class FinanceService:
         db.commit()
         db.refresh(cash_close)
         return cash_close
+
+    @staticmethod
+    def update_expense(db: Session, expense_id: int, data: dict) -> Expense | None:
+        expense = db.get(Expense, expense_id)
+        if not expense:
+            return None
+        for key, value in data.items():
+            setattr(expense, key, value)
+        db.add(expense)
+        db.commit()
+        db.refresh(expense)
+        return expense
+
+    @staticmethod
+    def get_chart_data(db: Session, days: int = 7) -> list[dict]:
+        """Devuelve los últimos N días con ventas, gastos y balance neto."""
+        from datetime import timedelta
+        result = []
+        today = date.today()
+        for i in range(days - 1, -1, -1):
+            target = today - timedelta(days=i)
+            summary = FinanceService.get_daily_summary(db, target)
+            result.append({
+                "date": target.strftime("%d/%m"),
+                "ventas": round(summary.gross_income, 2),
+                "gastos": round(summary.total_expenses, 2),
+                "balance": round(summary.net_balance, 2),
+            })
+        return result
+
+    @staticmethod
+    def delete_close(db: Session, close_id: int) -> bool:
+        """Elimina un cierre de caja por ID."""
+        cash_close = db.get(CashClose, close_id)
+        if not cash_close:
+            return False
+        db.delete(cash_close)
+        db.commit()
+        return True
 
     @staticmethod
     def list_closes(db: Session, skip: int = 0, limit: int = 30) -> list[CashClose]:

@@ -11,6 +11,29 @@ __pycache__/
 frontend/node_modules/
 frontend/dist/
 frontend/.env
+frontend-v0/node_modules/
+frontend-v0/.next/
+frontend-v0/.env*
+frontend-v0/tsconfig.tsbuildinfo
+
+# Archivos que no pertenecen al repo
+frontend-v0/*.exe
+frontend-v0/*.msix
+frontend-v0/*.zip
+frontend-v0/Backup-codes*
+frontend-v0/LOGO*/
+frontend-v0/Canva*/
+frontend-v0/*_files/
+
+# Logs y archivos temporales
+*.log
+prods_temp.json
+test_error.txt
+test_out.txt
+test_schema.py
+
+# Claude memory
+.claude/
 
 # OS
 .DS_Store

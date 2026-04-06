@@ -1,0 +1,50 @@
+======================================================
+  SISTEMA ALTA FIESTA - Guia de Instalacion y Uso
+======================================================
+
+REQUISITOS PREVIOS (instalar antes de empezar)
+───────────────────────────────────────────────
+1. Python 3.11 o superior
+   Descarga: https://www.python.org/downloads/
+   IMPORTANTE: durante la instalacion tildar "Add Python to PATH"
+
+2. Node.js LTS
+   Descarga: https://nodejs.org/
+   (descargar el boton grande que dice "LTS")
+
+
+INSTALACION (solo la primera vez)
+───────────────────────────────────────────────
+1. Abrir la carpeta del sistema
+2. Hacer doble clic en:  INSTALAR.bat
+3. Esperar a que termine (puede tardar 5-10 minutos la primera vez)
+4. Cuando diga "Instalacion completada", cerrar esa ventana
+
+
+INICIAR EL SISTEMA (cada vez que quieras usarlo)
+───────────────────────────────────────────────
+1. Hacer doble clic en:  INICIAR.bat
+2. Se abren dos ventanas negras (NO cerrarlas mientras usas el sistema)
+3. Se abre automaticamente el navegador con el sistema
+
+Si el navegador no abre solo, ir a:  http://localhost:3000
+
+
+USUARIO INICIAL
+───────────────────────────────────────────────
+  Usuario:   admin
+  Contraseña: admin123
+
+(Se puede cambiar desde Configuracion dentro del sistema)
+
+
+CERRAR EL SISTEMA
+───────────────────────────────────────────────
+Cerrar las dos ventanas negras que se abrieron con INICIAR.bat
+
+
+SOPORTE
+───────────────────────────────────────────────
+Ante cualquier problema contactar al desarrollador.
+
+======================================================

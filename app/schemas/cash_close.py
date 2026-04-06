@@ -4,9 +4,15 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+class CashCloseCreate(BaseModel):
+    opening_cash: float = 0
+    notes: Optional[str] = None
+
+
 class CashCloseResponse(BaseModel):
     id: int
     close_date: date
+    opening_cash: float
     total_cash: float
     total_debit: float
     total_credit: float
@@ -14,6 +20,7 @@ class CashCloseResponse(BaseModel):
     gross_income: float
     total_expenses: float
     net_balance: float
+    expected_cash: float = 0  # opening_cash + total_cash - gastos_en_efectivo
     notes: Optional[str]
     created_at: datetime
 
