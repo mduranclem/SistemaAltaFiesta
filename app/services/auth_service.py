@@ -44,11 +44,6 @@ class AuthService:
         if user.password_hash != _hash_password(data.password):
             return None
 
-        # Eliminar sesiones viejas de este usuario
-        old_sessions = db.scalars(select(Session).where(Session.user_id == user.id)).all()
-        for s in old_sessions:
-            db.delete(s)
-
         token = secrets.token_hex(32)
         session = Session(
             token=token,
