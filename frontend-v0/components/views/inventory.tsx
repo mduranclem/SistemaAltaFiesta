@@ -372,7 +372,12 @@ function ProductModal({
   })
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [manualPrice, setManualPrice] = useState(false)
+  // Si el producto ya tiene precio que no coincide con costo*margen, activar modo manual
+  const [manualPrice, setManualPrice] = useState(() => {
+    if (!product) return false
+    const calculated = Number(product.cost_price) * (1 + Number(product.margin_percent) / 100)
+    return Math.abs(calculated - Number(product.sale_price)) > 1
+  })
 
   const recommendedPVP = Number(form.cost_price) * (1 + Number(form.margin_percent) / 100)
   const previewPVP = manualPrice && form.sale_price_override !== '' ? Number(form.sale_price_override) : recommendedPVP
@@ -416,10 +421,13 @@ function ProductModal({
           retail_price: form.retail_price !== '' ? Number(form.retail_price) : null,
           sale_price_override: manualPrice && form.sale_price_override !== '' ? Number(form.sale_price_override) : undefined,
         })
-        await updateProductPrice(product.id, {
-          cost_price: Number(form.cost_price),
-          margin_percent: Number(form.margin_percent),
-        })
+        // Solo recalcular precio si NO se usó precio manual
+        if (!manualPrice) {
+          await updateProductPrice(product.id, {
+            cost_price: Number(form.cost_price),
+            margin_percent: Number(form.margin_percent),
+          })
+        }
       }
       await onSave()
     } catch {
