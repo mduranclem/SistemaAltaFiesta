@@ -217,7 +217,9 @@ export function InventoryView({ initialLowStockOnly = false }: { initialLowStock
                     </td>
                     <td className="px-4 py-3 text-right hidden md:table-cell">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-medium">
-                        {product.margin_percent}%
+                        {product.cost_price > 1
+                          ? `${Math.round((product.sale_price / product.cost_price - 1) * 100)}%`
+                          : `${product.margin_percent}%`}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right font-bold text-success">
