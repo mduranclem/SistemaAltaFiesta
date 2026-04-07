@@ -186,12 +186,11 @@ export function POSView() {
 
   function effectivePrice(item: CartItem): number {
     if (item.price_override !== undefined) return item.price_override
-    if (item.unit_type === 'peso' && (item.price_mid_surcharge > 0 || item.price_small_surcharge > 0)) {
+    if (item.unit_type === 'peso') {
       const g = item.quantity
-      if (g < 500 && item.price_small_surcharge > 0)
-        return item.sale_price * (1 + item.price_small_surcharge / 100)
-      if (g < 1000 && item.price_mid_surcharge > 0)
-        return item.sale_price * (1 + item.price_mid_surcharge / 100)
+      // price_mid_surcharge y price_small_surcharge guardan el precio/kg del tramo
+      if (g < 500 && item.price_small_surcharge > 0) return item.price_small_surcharge
+      if (g < 1000 && item.price_mid_surcharge > 0) return item.price_mid_surcharge
     }
     return item.sale_price
   }
@@ -272,10 +271,10 @@ export function POSView() {
       const isPeso = i.unit_type === 'peso'
       const qty = isPeso ? `${i.quantity}g` : `${i.quantity}`
       let price = i.price_override !== undefined ? i.price_override : i.sale_price
-      if (isPeso && i.price_override === undefined && (i.price_mid_surcharge > 0 || i.price_small_surcharge > 0)) {
+      if (isPeso && i.price_override === undefined) {
         const g = i.quantity
-        if (g < 500 && i.price_small_surcharge > 0) price = i.sale_price * (1 + i.price_small_surcharge / 100)
-        else if (g < 1000 && i.price_mid_surcharge > 0) price = i.sale_price * (1 + i.price_mid_surcharge / 100)
+        if (g < 500 && i.price_small_surcharge > 0) price = i.price_small_surcharge
+        else if (g < 1000 && i.price_mid_surcharge > 0) price = i.price_mid_surcharge
       }
       const lineTotal = isPeso ? (price / 1000) * i.quantity : price * i.quantity
       return `<tr><td>${i.name}</td><td style="text-align:right">${qty}</td><td style="text-align:right">${formatCurrency(lineTotal)}</td></tr>`
@@ -506,15 +505,16 @@ export function POSView() {
                         const g = Number(weightInput[product.id])
                         const mid = product.price_mid_surcharge ?? 0
                         const small = product.price_small_surcharge ?? 0
+                        // mid y small guardan el precio/kg del tramo (no son porcentajes)
                         let kgPrice = product.sale_price
-                        if (mid > 0 || small > 0) {
-                          if (g < 500 && small > 0) kgPrice = product.sale_price * (1 + small / 100)
-                          else if (g < 1000 && mid > 0) kgPrice = product.sale_price * (1 + mid / 100)
-                        }
+                        if (g < 500 && small > 0) kgPrice = small
+                        else if (g < 1000 && mid > 0) kgPrice = mid
+                        const total = Math.round((kgPrice / 1000) * g)
+                        const tiered = (mid > 0 || small > 0) && kgPrice !== product.sale_price
                         return (
                           <p className="text-xs text-primary font-medium text-center">
-                            {formatCurrency((kgPrice / 1000) * g)}
-                            {(mid > 0 || small > 0) && g < 1000 && <span className="text-muted-foreground ml-1">({formatCurrency(kgPrice)}/kg)</span>}
+                            {formatCurrency(total)}
+                            {tiered && <span className="text-muted-foreground ml-1">({formatCurrency(kgPrice)}/kg)</span>}
                           </p>
                         )
                       })()}

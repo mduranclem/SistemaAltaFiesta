@@ -65,16 +65,20 @@ class SaleService:
             if item_data.unit_price_override is not None:
                 unit_price = round(float(item_data.unit_price_override), 4)
             elif product.unit_type == "peso":
-                base_per_gram = float(product.sale_price) / 1000
+                # price_mid_surcharge y price_small_surcharge almacenan el precio
+                # efectivo POR KG para cada tramo (no son porcentajes):
+                #   >=1000g → sale_price/1000 por gramo
+                #   500-999g → price_mid_surcharge/1000 por gramo
+                #   <500g   → price_small_surcharge/1000 por gramo
                 qty_g = float(item_data.quantity)
-                mid_s = float(product.price_mid_surcharge or 0)
-                small_s = float(product.price_small_surcharge or 0)
-                if (mid_s > 0 or small_s > 0) and qty_g < 1000:
-                    if qty_g < 500:
-                        base_per_gram = base_per_gram * (1 + small_s / 100)
-                    else:
-                        base_per_gram = base_per_gram * (1 + mid_s / 100)
-                unit_price = round(base_per_gram, 4)
+                mid_kg = float(product.price_mid_surcharge or 0)
+                small_kg = float(product.price_small_surcharge or 0)
+                if small_kg > 0 and qty_g < 500:
+                    unit_price = round(small_kg / 1000, 4)
+                elif mid_kg > 0 and qty_g < 1000:
+                    unit_price = round(mid_kg / 1000, 4)
+                else:
+                    unit_price = round(float(product.sale_price) / 1000, 4)
             elif is_retail and product.retail_price:
                 unit_price = float(product.retail_price)
             else:
