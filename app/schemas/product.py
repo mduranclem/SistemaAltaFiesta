@@ -58,6 +58,7 @@ class ProductResponse(BaseModel):
     is_combo: bool
     is_low_stock: bool
     combo_available: bool = True
+    combo_missing: Optional[str] = None  # nombre del ingrediente sin stock suficiente
     created_at: datetime
     updated_at: datetime
 

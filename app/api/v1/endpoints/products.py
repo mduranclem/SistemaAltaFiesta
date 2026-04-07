@@ -18,12 +18,14 @@ def _with_combo_available(products: list, db: Session) -> list[dict]:
         d = {c.name: getattr(p, c.name) for c in p.__table__.columns}
         d['is_low_stock'] = p.is_low_stock
         d['combo_available'] = True
+        d['combo_missing'] = None
         if p.is_combo:
             combo_items = db.scalars(select(ComboItem).where(ComboItem.combo_product_id == p.id)).all()
             for ci in combo_items:
                 ing = db.get(Product, ci.ingredient_product_id)
                 if not ing or float(ing.stock) < float(ci.quantity):
                     d['combo_available'] = False
+                    d['combo_missing'] = ing.name if ing else 'Ingrediente desconocido'
                     break
         result.append(d)
     return result

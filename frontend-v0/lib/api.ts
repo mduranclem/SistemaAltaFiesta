@@ -58,6 +58,7 @@ export interface Product {
   is_combo: boolean
   is_low_stock: boolean
   combo_available: boolean
+  combo_missing?: string | null
 }
 
 export interface SaleItem {

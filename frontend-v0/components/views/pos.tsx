@@ -432,7 +432,7 @@ export function POSView() {
                     )}
                     {isCombo ? (
                       <p className={cn('text-xs font-medium', comboAvailable ? 'text-primary/70' : 'text-destructive')}>
-                        {comboAvailable ? 'Disponible según stock' : 'Sin stock suficiente'}
+                        {comboAvailable ? 'Disponible según stock' : `Sin stock: ${product.combo_missing ?? 'ingrediente'}`}
                       </p>
                     ) : (
                       <p className={cn('text-xs font-medium', product.is_low_stock ? 'text-destructive' : 'text-muted-foreground')}>
