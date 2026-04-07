@@ -397,6 +397,7 @@ function ProductModal({
           min_stock: Number(form.min_stock),
           stock: Number(form.stock),
           is_active: true,
+          is_combo: false,
           package_size: Number(form.package_size) || 1,
           retail_price: form.retail_price !== '' ? Number(form.retail_price) : null,
           sale_price_override: manualPrice && form.sale_price_override !== '' ? Number(form.sale_price_override) : undefined,
