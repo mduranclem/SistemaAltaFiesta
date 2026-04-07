@@ -1,12 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database.session import get_db
+from app.models.combo import ComboItem
+from app.models.product import Product
 from app.schemas.product import (
     ProductCreate, ProductUpdate, ProductResponse,
     ProductPriceUpdate, StockAdjustment,
 )
 from app.services.product_service import ProductService
+
+
+def _with_combo_available(products: list, db: Session) -> list[dict]:
+    result = []
+    for p in products:
+        d = {c.name: getattr(p, c.name) for c in p.__table__.columns}
+        d['is_low_stock'] = p.is_low_stock
+        d['combo_available'] = True
+        if p.is_combo:
+            combo_items = db.scalars(select(ComboItem).where(ComboItem.combo_product_id == p.id)).all()
+            for ci in combo_items:
+                ing = db.get(Product, ci.ingredient_product_id)
+                if not ing or float(ing.stock) < float(ci.quantity):
+                    d['combo_available'] = False
+                    break
+        result.append(d)
+    return result
 
 router = APIRouter(prefix="/products", tags=["Inventario"])
 
@@ -26,7 +46,8 @@ def list_products(
     category: str | None = None,
     db: Session = Depends(get_db),
 ):
-    return ProductService.list_all(db, skip, limit, active_only, category)
+    products = ProductService.list_all(db, skip, limit, active_only, category)
+    return _with_combo_available(products, db)
 
 
 @router.get("/low-stock", response_model=list[ProductResponse])

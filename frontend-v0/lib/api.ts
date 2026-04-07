@@ -57,6 +57,7 @@ export interface Product {
   is_active: boolean
   is_combo: boolean
   is_low_stock: boolean
+  combo_available: boolean
 }
 
 export interface SaleItem {

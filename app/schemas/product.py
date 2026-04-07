@@ -57,6 +57,7 @@ class ProductResponse(BaseModel):
     is_active: bool
     is_combo: bool
     is_low_stock: bool
+    combo_available: bool = True
     created_at: datetime
     updated_at: datetime
 

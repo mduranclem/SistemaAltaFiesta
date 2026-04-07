@@ -396,6 +396,7 @@ export function POSView() {
             {filtered.map((product) => {
               const isPeso = product.unit_type === 'peso'
               const isCombo = product.is_combo
+              const comboAvailable = product.combo_available !== false
               const isWeightOpen = isPeso && product.id in weightInput
               const hasFraccional = !isCombo && product.retail_price && (product.package_size ?? 1) > 1
               return (
@@ -403,15 +404,16 @@ export function POSView() {
                   key={product.id}
                   className={cn(
                     'flex flex-col justify-between p-4 rounded-2xl border text-left transition-all',
-                    isCombo ? 'bg-card border-primary/30 hover:shadow-md hover:border-primary/60 cursor-pointer'
+                    isCombo && comboAvailable ? 'bg-card border-primary/30 hover:shadow-md hover:border-primary/60 cursor-pointer'
+                      : isCombo && !comboAvailable ? 'bg-muted border-border opacity-60'
                       : product.stock === 0 ? 'bg-muted border-border opacity-60'
                       : product.is_low_stock ? 'bg-card border-destructive/40'
                       : 'bg-card border-border',
                     !isCombo && !isWeightOpen && !hasFraccional && product.stock > 0 && 'hover:shadow-md hover:border-primary/50 cursor-pointer'
                   )}
                   onClick={() => {
-                    if (isCombo) { addComboToCart(product); return }
-                    if (!isWeightOpen && !hasFraccional && product.stock > 0) addToCart(product)
+                    if (isCombo && comboAvailable) { addComboToCart(product); return }
+                    if (!isCombo && !isWeightOpen && !hasFraccional && product.stock > 0) addToCart(product)
                   }}
                 >
                   <div>
@@ -429,7 +431,9 @@ export function POSView() {
                       <p className="text-xs text-muted-foreground">{formatCurrency(product.retail_price!)}/u suelto</p>
                     )}
                     {isCombo ? (
-                      <p className="text-xs font-medium text-primary/70">Disponible según stock</p>
+                      <p className={cn('text-xs font-medium', comboAvailable ? 'text-primary/70' : 'text-destructive')}>
+                        {comboAvailable ? 'Disponible según stock' : 'Sin stock suficiente'}
+                      </p>
                     ) : (
                       <p className={cn('text-xs font-medium', product.is_low_stock ? 'text-destructive' : 'text-muted-foreground')}>
                         {product.stock === 0 ? 'Sin stock' : isPeso ? `Stock: ${product.stock}g` : `Stock: ${product.stock}`}
