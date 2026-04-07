@@ -419,9 +419,13 @@ function ProductModal({
           min_stock: Number(form.min_stock),
           package_size: Number(form.package_size) || 1,
           retail_price: form.retail_price !== '' ? Number(form.retail_price) : null,
+          // Siempre actualizar costo y margen
+          cost_price: Number(form.cost_price) || undefined,
+          margin_percent: Number(form.margin_percent),
+          // Si precio manual, pasarlo para que no se recalcule
           sale_price_override: manualPrice && form.sale_price_override !== '' ? Number(form.sale_price_override) : undefined,
         })
-        // Solo recalcular precio si NO se usó precio manual
+        // Solo llamar updateProductPrice si NO hay precio manual (recalcula sale_price)
         if (!manualPrice) {
           await updateProductPrice(product.id, {
             cost_price: Number(form.cost_price),
