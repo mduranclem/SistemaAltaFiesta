@@ -21,6 +21,8 @@ async def lifespan(app: FastAPI):
     with engine.connect() as conn:
         for col_sql in [
             "ALTER TABLE products ADD COLUMN is_combo BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE products ADD COLUMN price_mid_surcharge NUMERIC(5,2) NOT NULL DEFAULT 0",
+            "ALTER TABLE products ADD COLUMN price_small_surcharge NUMERIC(5,2) NOT NULL DEFAULT 0",
         ]:
             try:
                 conn.execute(text(col_sql))

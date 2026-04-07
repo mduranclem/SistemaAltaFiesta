@@ -18,6 +18,8 @@ class ProductCreate(BaseModel):
     package_size: int = Field(1, ge=1)
     retail_price: Optional[float] = Field(None, gt=0)
     sale_price_override: Optional[float] = Field(None, gt=0)
+    price_mid_surcharge: float = Field(0, ge=0, le=1000)
+    price_small_surcharge: float = Field(0, ge=0, le=1000)
 
 
 class ProductUpdate(BaseModel):
@@ -33,6 +35,8 @@ class ProductUpdate(BaseModel):
     package_size: Optional[int] = Field(None, ge=1)
     retail_price: Optional[float] = Field(None, gt=0)
     sale_price_override: Optional[float] = Field(None, gt=0)
+    price_mid_surcharge: Optional[float] = Field(None, ge=0, le=1000)
+    price_small_surcharge: Optional[float] = Field(None, ge=0, le=1000)
 
 
 class ProductPriceUpdate(BaseModel):
@@ -59,6 +63,8 @@ class ProductResponse(BaseModel):
     is_low_stock: bool
     combo_available: bool = True
     combo_missing: Optional[str] = None  # nombre del ingrediente sin stock suficiente
+    price_mid_surcharge: float = 0
+    price_small_surcharge: float = 0
     created_at: datetime
     updated_at: datetime
 

@@ -53,6 +53,12 @@ class Product(Base):
     retail_price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     # Precio por unidad suelta (None = no se vende suelto)
 
+    # ── Precio por tramo (sólo para unit_type="peso") ──────────
+    # El price_mid_surcharge aplica si la venta es entre 500 y 999g
+    # El price_small_surcharge aplica si la venta es menor a 500g
+    price_mid_surcharge: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    price_small_surcharge: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+
     # ── Estado ────────────────────────────────────────────────
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_combo: Mapped[bool] = mapped_column(Boolean, default=False, server_default='0')

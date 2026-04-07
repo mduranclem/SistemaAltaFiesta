@@ -65,7 +65,16 @@ class SaleService:
             if item_data.unit_price_override is not None:
                 unit_price = round(float(item_data.unit_price_override), 4)
             elif product.unit_type == "peso":
-                unit_price = round(float(product.sale_price) / 1000, 4)
+                base_per_gram = float(product.sale_price) / 1000
+                qty_g = float(item_data.quantity)
+                mid_s = float(product.price_mid_surcharge or 0)
+                small_s = float(product.price_small_surcharge or 0)
+                if (mid_s > 0 or small_s > 0) and qty_g < 1000:
+                    if qty_g < 500:
+                        base_per_gram = base_per_gram * (1 + small_s / 100)
+                    else:
+                        base_per_gram = base_per_gram * (1 + mid_s / 100)
+                unit_price = round(base_per_gram, 4)
             elif is_retail and product.retail_price:
                 unit_price = float(product.retail_price)
             else:

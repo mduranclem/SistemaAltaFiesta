@@ -19,6 +19,8 @@ interface CartItem extends SaleItem {
   retail_price: number | null
   is_retail: boolean
   price_override?: number  // precio mayorista manual
+  price_mid_surcharge: number   // recargo % entre 500-999g
+  price_small_surcharge: number // recargo % < 500g
 }
 
 interface CompletedSale {
@@ -107,6 +109,7 @@ export function POSView() {
           product_id: product.id, quantity: 1, name: product.name,
           sale_price: product.sale_price, unit_type: product.unit_type,
           package_size: 1, retail_price: null, is_retail: false,
+          price_mid_surcharge: 0, price_small_surcharge: 0,
         }]
       })
     } catch {
@@ -135,6 +138,8 @@ export function POSView() {
         package_size: product.package_size ?? 1,
         retail_price: product.retail_price,
         is_retail: asRetail,
+        price_mid_surcharge: 0,
+        price_small_surcharge: 0,
       }]
     })
   }
@@ -150,6 +155,8 @@ export function POSView() {
         product_id: product.id, quantity: grams, name: product.name,
         sale_price: product.sale_price, unit_type: product.unit_type,
         package_size: 1, retail_price: null, is_retail: false,
+        price_mid_surcharge: product.price_mid_surcharge ?? 0,
+        price_small_surcharge: product.price_small_surcharge ?? 0,
       }]
     })
     setWeightInput((prev) => { const n = { ...prev }; delete n[product.id]; return n })
@@ -178,7 +185,15 @@ export function POSView() {
   }
 
   function effectivePrice(item: CartItem): number {
-    return item.price_override !== undefined ? item.price_override : item.sale_price
+    if (item.price_override !== undefined) return item.price_override
+    if (item.unit_type === 'peso' && (item.price_mid_surcharge > 0 || item.price_small_surcharge > 0)) {
+      const g = item.quantity
+      if (g < 500 && item.price_small_surcharge > 0)
+        return item.sale_price * (1 + item.price_small_surcharge / 100)
+      if (g < 1000 && item.price_mid_surcharge > 0)
+        return item.sale_price * (1 + item.price_mid_surcharge / 100)
+    }
+    return item.sale_price
   }
 
   function itemPrice(item: CartItem): number {
@@ -256,7 +271,12 @@ export function POSView() {
     const lines = completedSale.items.map((i) => {
       const isPeso = i.unit_type === 'peso'
       const qty = isPeso ? `${i.quantity}g` : `${i.quantity}`
-      const price = i.price_override !== undefined ? i.price_override : i.sale_price
+      let price = i.price_override !== undefined ? i.price_override : i.sale_price
+      if (isPeso && i.price_override === undefined && (i.price_mid_surcharge > 0 || i.price_small_surcharge > 0)) {
+        const g = i.quantity
+        if (g < 500 && i.price_small_surcharge > 0) price = i.sale_price * (1 + i.price_small_surcharge / 100)
+        else if (g < 1000 && i.price_mid_surcharge > 0) price = i.sale_price * (1 + i.price_mid_surcharge / 100)
+      }
       const lineTotal = isPeso ? (price / 1000) * i.quantity : price * i.quantity
       return `<tr><td>${i.name}</td><td style="text-align:right">${qty}</td><td style="text-align:right">${formatCurrency(lineTotal)}</td></tr>`
     }).join('')
@@ -482,11 +502,22 @@ export function POSView() {
                           className="px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground"
                         >✕</button>
                       </div>
-                      {weightInput[product.id] && Number(weightInput[product.id]) > 0 && (
-                        <p className="text-xs text-primary font-medium text-center">
-                          {formatCurrency((product.sale_price / 1000) * Number(weightInput[product.id]))}
-                        </p>
-                      )}
+                      {weightInput[product.id] && Number(weightInput[product.id]) > 0 && (() => {
+                        const g = Number(weightInput[product.id])
+                        const mid = product.price_mid_surcharge ?? 0
+                        const small = product.price_small_surcharge ?? 0
+                        let kgPrice = product.sale_price
+                        if (mid > 0 || small > 0) {
+                          if (g < 500 && small > 0) kgPrice = product.sale_price * (1 + small / 100)
+                          else if (g < 1000 && mid > 0) kgPrice = product.sale_price * (1 + mid / 100)
+                        }
+                        return (
+                          <p className="text-xs text-primary font-medium text-center">
+                            {formatCurrency((kgPrice / 1000) * g)}
+                            {(mid > 0 || small > 0) && g < 1000 && <span className="text-muted-foreground ml-1">({formatCurrency(kgPrice)}/kg)</span>}
+                          </p>
+                        )
+                      })()}
                     </div>
                   )}
                 </div>

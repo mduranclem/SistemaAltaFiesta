@@ -59,6 +59,8 @@ export interface Product {
   is_low_stock: boolean
   combo_available: boolean
   combo_missing?: string | null
+  price_mid_surcharge: number
+  price_small_surcharge: number
 }
 
 export interface SaleItem {
